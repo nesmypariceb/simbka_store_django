@@ -36,8 +36,7 @@ def add_cart(request, product_id):
             cart=cart,
         )
     cart_item.save()
-    return HttpResponse(cart_item.quantity)
-    exit()
+
     return redirect('cart')
 
 
@@ -55,7 +54,7 @@ def cart(request, total=0, quantity=0, cart_item=None):
     context = {
         'total': total,
         'quantity': quantity,
-        'cart_item': cart_item,
+        'cart_items': cart_items,
     }
 
     return render(request, 'store/cart.html', context)
