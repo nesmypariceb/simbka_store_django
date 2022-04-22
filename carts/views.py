@@ -1,7 +1,7 @@
-from itertools import product
-from store.models import Product
+from store.models import Product, Variation
 from django.shortcuts import get_object_or_404, redirect, render
 from carts.models import Cart, CartItem
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 
@@ -15,6 +15,24 @@ def cart_id(request):
 
 def add_cart(request, product_id):
     product = Product.objects.get(id=product_id)  # get the product
+
+    product_variation = []
+
+    if request.method == 'POST':
+        for item in request.POST:
+            key = item
+            value = request.POST[key]
+
+            try:
+                variation = Variation.objects.get(
+                    product=product,
+                    variation_category__iexact=key,
+                    variation_value__iexact=value
+                )  # iexact ingores if the character is lower or upper
+
+                product_variation.append(variation)
+            except:
+                pass
     try:
         # get the cart using the cart_id present in the session(cookies)
         cart = Cart.objects.get(cart_id=cart_id(request))
@@ -26,15 +44,26 @@ def add_cart(request, product_id):
 
     try:
         cart_item = CartItem.objects.get(product=product, cart=cart)
+
+        if len(product_variation) > 0:
+            for item in product_variation:
+                cart_item.variation.add(item)
+
         cart_item.quantity += 1
         cart_item.save()
+
     except CartItem.DoesNotExist:
         cart_item = CartItem.objects.create(
             product=product,
             quantity=1,
             cart=cart,
         )
-    cart_item.save()
+
+        if len(product_variation) > 0:
+            for item in product_variation:
+                cart_item.variation.add(item)
+
+        cart_item.save()
 
     return redirect('cart')
 
@@ -71,9 +100,9 @@ def cart(request, total=0, quantity=0, cart_item=None):
             total += (cart_item.product.price * cart_item.quantity)
             quantity += cart_item.quantity
 
-        tax = (2 * total) / 100
+        tax = (2 * total) / 100  # The tax is 2 percent
         grand_total = total * tax
-    except ObjectNotExist:
+    except ObjectDoesNotExist:
         pass  # just ignore
 
     context = {
