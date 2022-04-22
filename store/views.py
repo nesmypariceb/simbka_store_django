@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from carts.models import CartItem
 from category.models import Category
 from . models import Product
-from carts.views import cart_id
+from carts.views import _cart_id
 from django.db.models import Q
 
 
@@ -51,7 +51,7 @@ def product_detail(request, category_slug, product_slug):
 
         # Check if the product already exists in the cart
         in_cart = CartItem.objects.filter(
-            cart__cart_id=cart_id(request),  # cart__ is the foreign key
+            cart__cart_id=_cart_id(request),  # cart__ is the foreign key
             product=single_product
         ).exists()
     except Exception as e:
