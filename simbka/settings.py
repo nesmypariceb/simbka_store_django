@@ -139,7 +139,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Django messages
 MESSAGE_TAGS = {
-    messages.ERROR: '',
+    messages.ERROR: 'danger',
 }
 
 
